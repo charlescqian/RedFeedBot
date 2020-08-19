@@ -67,7 +67,7 @@ async def fetch(ctx, *args):
     for submission in submission_list:
         sub_str += f'{submission.score} points {submission.title}  {submission.url} \n\n '
 
-    ret_str = f"Here are the 10 {args[1]} posts on {args[0]}: \n {sub_str}" 
+    ret_str = f"Here are the 5 {args[1]} posts on {args[0]}: \n {sub_str}" 
     await ctx.send(ret_str)
 @client.command()
 async def ping(ctx):
