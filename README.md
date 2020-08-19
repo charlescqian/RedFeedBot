@@ -1,4 +1,4 @@
-# RedditFeedBot
+# RedFeedBot
 
 Discord bot that 
 - "subscribes" to a certain subreddit
