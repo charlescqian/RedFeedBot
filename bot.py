@@ -3,16 +3,21 @@ import time
 
 import discord # 3rd party packages 
 from discord.ext import commands, tasks
-import praw 
+import praw
+import asyncpraw 
 from dotenv import load_dotenv
 
 #import reddit_api # local modules
+from loop import MyLoop
 
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 client_id = os.getenv('CLIENT_ID')
 client_secret = os.getenv('CLIENT_SECRET')
 user_agent = os.getenv('USER_AGENT')
+async_reddit = asyncpraw.Reddit(client_id=client_id,
+                     client_secret=client_secret,
+                     user_agent=user_agent)
 reddit = praw.Reddit(client_id=client_id,
                      client_secret=client_secret,
                      user_agent=user_agent)
@@ -43,9 +48,10 @@ async def fetch(ctx, sr, st):
 
 # TODO: Currently, this only works for one instance, so perhaps creating a separate cog for each call of the command is the right way to do it
 @bot.command(name='auto')
-async def fetch_auto(ctx, sr, st, period):
-    fetch_loop.change_interval(hours=float(period))
-    fetch_loop.start(ctx.channel, sr, st)
+async def fetch_auto(ctx, sr, st, interval):
+    # fetch_loop.change_interval(hours=float(interval))
+    # fetch_loop.start(ctx.channel, sr, st)
+    loop = MyLoop(ctx.channel, sr, st, interval, __gen_ret_str)
 
 # TODO: Could potentially use SubredditStream here, but it's blocking? example taken from: https://asyncpraw.readthedocs.io/en/stable/tutorials/reply_bot.html, but it's not working
 @bot.command()
@@ -54,8 +60,8 @@ async def feed(ctx, sr):
     # ret_str = __gen_ret_str(sr, 'new')
     # await ctx.send(ret_str)
     # feed_loop.start(ctx.channel, sr, time.time())
-    subreddit = await reddit.subreddit(sr)
-    async for submission in subreddit.stream.submissions():
+    sub = await async_reddit.subreddit(sr)
+    async for submission in sub.stream.submissions():
         print(submission.title)
 
 @tasks.loop(minutes=15)
@@ -66,11 +72,15 @@ async def feed_loop(channel, sr, last_subm_time):
 async def ping(ctx):
     await ctx.send(f'Your ping is {round(bot.latency * 1000)}ms')
 
-@tasks.loop(hours=1)
-async def fetch_loop(channel, sr, st):
-    
-    ret_str = __gen_ret_str(sr, st)
-    await channel.send(ret_str)
+# class MyLoop:
+#     def __init__(self, channel, sr, st, interval):
+#         self.fetch_loop.change_interval(hours=float(interval))
+#         self.fetch_loop.start(channel, sr, st)
+
+#     @tasks.loop(hours=1)
+#     async def fetch_loop(self, channel, sr, st):
+#         ret_str = __gen_ret_str(sr, st)
+#         await channel.send(ret_str)
 
 def __gen_ret_str(sr, st):
     submission_list = []
@@ -95,31 +105,5 @@ def __gen_ret_str(sr, st):
     ret_str = f"Here are the 5 {st.lower()} posts on {sr}: \n {sub_str}" 
 
     return ret_str
-
-# class AutoFetchCog(commands.Cog):
-#     def __init__(self, subreddit, sort_type, period):
-#         self.subreddit = subreddit
-#         self.sort_type = sort_type
-#         self.period = period
-#         self.printer.start()
-
-#     @tasks.loop(seconds=10)
-#     async def printer(self):
-#         print(self.subreddit)
-#         print(self.sort_type)
-#         print(self.period)
-
-# class MyCog(commands.Cog):
-#     def __init__(self):
-#         self.index = 0
-#         self.printer.start()
-
-#     def cog_unload(self):
-#         self.printer.cancel()
-
-#     @tasks.loop(seconds=5.0)
-#     async def printer(self):
-#         print(self.index)
-#         self.index += 1
 
 bot.run(TOKEN)
