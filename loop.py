@@ -1,6 +1,6 @@
 from discord.ext import tasks, commands
 
-
+# TODO: Update naming
 class MyLoop:
     def __init__(self, channel, sr, st, interval, fn):
         self.fetch_loop.change_interval(hours=float(interval))

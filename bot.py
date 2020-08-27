@@ -7,8 +7,7 @@ import praw
 import asyncpraw 
 from dotenv import load_dotenv
 
-#import reddit_api # local modules
-from loop import MyLoop
+from loop import MyLoop #local modules
 
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
@@ -28,22 +27,18 @@ bot = commands.Bot(command_prefix='.')
 async def on_ready():
     print('We have logged in as {0.user}'.format(bot))
 
-@bot.command()
-async def subscribe(ctx, arg):
-    await ctx.send(f'You have subscribed to {arg}.')
-
+# TODO: Write help documentations
 @bot.command()
 async def fetch(ctx, sr, st):
-
     ret_str = __gen_ret_str(sr, st)
     await ctx.send(ret_str)
 
-# TODO: Currently, this only works for one instance, so perhaps creating a separate cog for each call of the command is the right way to do it
+# TODO: Write help documentations
 @bot.command(name='auto')
 async def fetch_auto(ctx, sr, st, interval):
     loop = MyLoop(ctx.channel, sr, st, interval, __gen_ret_str)
 
-# TODO: Actually post the new submissions as message in the channel
+# TODO: Write help documentations
 @bot.command()
 async def feed(ctx, sr):
 
@@ -59,10 +54,12 @@ async def feed(ctx, sr):
         sub_str = f'Here is the latest post on {sr}: {submission.score} points | {submission.title} | {submission.url}'
         await ctx.send(sub_str)
 
+# TODO: Write help documentations
 @bot.command()
 async def ping(ctx):
     await ctx.send(f'Your ping is {round(bot.latency * 1000)}ms')
 
+# TODO: Find a way to better format the strings, maybe add some hyperlinks rather then posting the whole link
 def __gen_ret_str(sr, st):
     submission_list = []
 
@@ -87,6 +84,6 @@ def __gen_ret_str(sr, st):
 
     return ret_str
 
-# TODO: Maybe get comments from a post? 
+# TODO: Maybe a copmmand to get comments from a post? 
 
 bot.run(TOKEN)
