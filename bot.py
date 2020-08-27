@@ -28,14 +28,6 @@ bot = commands.Bot(command_prefix='.')
 async def on_ready():
     print('We have logged in as {0.user}'.format(bot))
 
-# @client.event
-# async def on_message(message):
-    # if message.author == client.user:
-    #     return
-
-#     if message.content.startswith('.hello'):
-#         await message.channel.send('Hello!')
-
 @bot.command()
 async def subscribe(ctx, arg):
     await ctx.send(f'You have subscribed to {arg}.')
@@ -49,38 +41,27 @@ async def fetch(ctx, sr, st):
 # TODO: Currently, this only works for one instance, so perhaps creating a separate cog for each call of the command is the right way to do it
 @bot.command(name='auto')
 async def fetch_auto(ctx, sr, st, interval):
-    # fetch_loop.change_interval(hours=float(interval))
-    # fetch_loop.start(ctx.channel, sr, st)
     loop = MyLoop(ctx.channel, sr, st, interval, __gen_ret_str)
 
-# TODO: Could potentially use SubredditStream here, but it's blocking? example taken from: https://asyncpraw.readthedocs.io/en/stable/tutorials/reply_bot.html, but it's not working
+# TODO: Actually post the new submissions as message in the channel
 @bot.command()
 async def feed(ctx, sr):
 
-    # ret_str = __gen_ret_str(sr, 'new')
-    # await ctx.send(ret_str)
-    # feed_loop.start(ctx.channel, sr, time.time())
+    ret_str = __gen_ret_str(sr, 'new')
+    await ctx.send(ret_str)
+    
+    count = 0
     sub = await async_reddit.subreddit(sr)
     async for submission in sub.stream.submissions():
-        print(submission.title)
-
-@tasks.loop(minutes=15)
-async def feed_loop(channel, sr, last_subm_time):
-    pass
+        if count < 100:
+            count += 1
+            continue
+        sub_str = f'Here is the latest post on {sr}: {submission.score} points | {submission.title} | {submission.url}'
+        await ctx.send(sub_str)
 
 @bot.command()
 async def ping(ctx):
     await ctx.send(f'Your ping is {round(bot.latency * 1000)}ms')
-
-# class MyLoop:
-#     def __init__(self, channel, sr, st, interval):
-#         self.fetch_loop.change_interval(hours=float(interval))
-#         self.fetch_loop.start(channel, sr, st)
-
-#     @tasks.loop(hours=1)
-#     async def fetch_loop(self, channel, sr, st):
-#         ret_str = __gen_ret_str(sr, st)
-#         await channel.send(ret_str)
 
 def __gen_ret_str(sr, st):
     submission_list = []
@@ -105,5 +86,7 @@ def __gen_ret_str(sr, st):
     ret_str = f"Here are the 5 {st.lower()} posts on {sr}: \n {sub_str}" 
 
     return ret_str
+
+# TODO: Maybe get comments from a post? 
 
 bot.run(TOKEN)
