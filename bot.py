@@ -1,5 +1,6 @@
 import os # standard library
 import time
+from datetime import datetime
 
 import discord # 3rd party packages 
 from discord.ext import commands, tasks
@@ -32,19 +33,19 @@ async def on_ready():
 # TODO: Add error processing, ie. when the user misses an argument in the commands
 @bot.command(description='Fetch 5 posts from the given subreddit, sorted by the given sort type (hot/new/top/rising). Example: \".fetch funny hot\" will fetch the 5 hottest posts from r/funny.')
 async def fetch(ctx, subreddit, sort_type):
-    ret_str = __gen_ret_str(subreddit, sort_type)
-    await ctx.send(ret_str)
+    embed = __gen_embed(subreddit, sort_type)
+    await ctx.send(embed=embed)
 
 # TODO: Add error processing, ie. when the user misses an argument in the commands
 @bot.command(name='auto', description='Automatically fetch 5 posts from the given subreddit, sorted by the given sort type (hot/new/top/rising), at every given interval (in hours). Example: \".auto funny hot 1\" will fetch the 5 hottest posts from r/funny every hour.')
 async def fetch_auto(ctx, subreddit, sort_type, interval):
-    loop = FetchLoop(ctx.channel, subreddit, sort_type, interval, __gen_ret_str)
+    loop = FetchLoop(ctx.channel, subreddit, sort_type, interval, __gen_embed)
 
 # TODO: Add error processing, ie. when the user misses an argument in the commands
 @bot.command(description='Fetches the 5 newest posts from the given subreddit, then every time a new post is submitted to the subreddit, a message will be sent with the post\'s details. Example: \".feed funny\"')
 async def feed(ctx, subreddit):
-    ret_str = __gen_ret_str(subreddit, 'new')
-    await ctx.send(ret_str)
+    embed = __gen_embed(subreddit, 'new')
+    await ctx.send(embed=embed)
     
     count = 0
     sub = await async_reddit.subreddit(subreddit)
@@ -52,8 +53,9 @@ async def feed(ctx, subreddit):
         if count < 100:
             count += 1
             continue
-        sub_str = f'Here is the latest post on {subreddit}: {submission.score} points | {submission.title} | {submission.url}'
-        await ctx.send(sub_str)
+        embed = discord.Embed(title=f'Newest post on {subreddit}')
+        embed.add_field(name=submission.title, value=f'{submission.score} points | [Link]({submission.url}) | [Comments](https://www.reddit.com/r/{subreddit}/comments/{submission.id})', inline=False)
+        await ctx.send(embed=embed)
 
 @bot.command(hidden='true')
 async def ping(ctx):
@@ -80,13 +82,35 @@ def __gen_ret_str(subreddit, sort_type):
     
     sub_str = ""
     for submission in submission_list:
-        sub_str += f'{submission.score} points | {submission.title} | {submission.url} \n\n '
+        sub_str += f'{submission.score} points | {submission.title} | [Link]({submission.url}) \n\n '
 
     ret_str = f"Here are the 5 {sort_type.lower()} posts on {subreddit}: \n {sub_str}" 
 
     return ret_str
 
-# TODO: Maybe a copmmand to get comments from a post? 
+def __gen_embed(subreddit, sort_type):
+    submission_list = []
+
+    if sort_type.lower() == 'new':
+        for submission in reddit.subreddit(subreddit).new(limit=5):
+            submission_list.append(submission)
+    elif sort_type.lower() == 'top':
+        for submission in reddit.subreddit(subreddit).top(limit=5):
+            submission_list.append(submission)
+    elif sort_type.lower() == 'hot':
+        for submission in reddit.subreddit(subreddit).hot(limit=5):
+            submission_list.append(submission)
+    elif sort_type.lower() == 'rising':
+        for submission in reddit.subreddit(subreddit).rising(limit=5):
+            submission_list.append(submission)
+
+    embed = discord.Embed(title=f'5 {sort_type.lower()} posts on {subreddit}')
+    for submission in submission_list:
+        embed.add_field(name=submission.title, value=f'{submission.score} points | [Link]({submission.url}) | [Comments](https://www.reddit.com/r/{subreddit}/comments/{submission.id}) | Submitted at {time.ctime(submission.created_utc)}', inline=False)
+    
+    return embed
+
+# TODO: Maybe a command to get comments from a post? 
 
 
 bot.run(TOKEN)
