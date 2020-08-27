@@ -7,7 +7,7 @@ import praw
 import asyncpraw 
 from dotenv import load_dotenv
 
-from loop import MyLoop #local modules
+from loop import FetchLoop #local modules
 
 ######################## Setup ###########################
 load_dotenv()
@@ -29,18 +29,20 @@ bot = commands.Bot(command_prefix='.')
 async def on_ready():
     print('We have logged in as {0.user}'.format(bot))
 
+# TODO: Add error processing, ie. when the user misses an argument in the commands
 @bot.command(description='Fetch 5 posts from the given subreddit, sorted by the given sort type (hot/new/top/rising). Example: \".fetch funny hot\" will fetch the 5 hottest posts from r/funny.')
 async def fetch(ctx, subreddit, sort_type):
     ret_str = __gen_ret_str(subreddit, sort_type)
     await ctx.send(ret_str)
 
+# TODO: Add error processing, ie. when the user misses an argument in the commands
 @bot.command(name='auto', description='Automatically fetch 5 posts from the given subreddit, sorted by the given sort type (hot/new/top/rising), at every given interval (in hours). Example: \".auto funny hot 1\" will fetch the 5 hottest posts from r/funny every hour.')
 async def fetch_auto(ctx, subreddit, sort_type, interval):
-    loop = MyLoop(ctx.channel, subreddit, sort_type, interval, __gen_ret_str)
+    loop = FetchLoop(ctx.channel, subreddit, sort_type, interval, __gen_ret_str)
 
+# TODO: Add error processing, ie. when the user misses an argument in the commands
 @bot.command(description='Fetches the 5 newest posts from the given subreddit, then every time a new post is submitted to the subreddit, a message will be sent with the post\'s details. Example: \".feed funny\"')
 async def feed(ctx, subreddit):
-
     ret_str = __gen_ret_str(subreddit, 'new')
     await ctx.send(ret_str)
     
