@@ -1,12 +1,17 @@
 # RedFeedBot
 
-Discord bot that 
-- "subscribes" to a certain subreddit
-- posts X number of top/new/hot/rising posts of the subscribed subreddit to the discord channel, user can choose X
-- can do so periodically at the users choice (once per day/per hour, etc.)
-- Posts the title and a link to the comment along with other meta data such as karma and time posted (maybe OP?) 
+RedFeedBot is a Discord bot that can automatically pull submissions from a given subreddit and post them in a given Discord channel. 
 
+## Current Features
+- Fetch and post the top/newest/hottest/rising posts of a given subreddit into a Discord Channel
+- Automatically fetch and post the top/newest/hottest/rising posts of a given subreddit for every given interval 
+- Subscribeds to a given subreddit and provides a feed of the newest post of a given subreddit
 
-Possible Libraries to use
-- discord.py
-- PRAW
+## Invite to Your Server
+- TODO: insert invite link here
+
+## Future Features
+- Store the subreddits that each channel has subscribed to, so when the bot is restarted, the subreddits that are subscribed by each channel is saved
+
+## License
+[MIT](https://choosealicense.com/licenses/mit/)
