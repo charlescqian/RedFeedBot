@@ -26,11 +26,12 @@ reddit = praw.Reddit(client_id=client_id,
                      client_secret=client_secret,
                      user_agent=user_agent)
 
-client = discord.Client()
 bot = commands.Bot(command_prefix='.')
 
-# client = pymongo.MongoClient(f'mongodb+srv://dbAdmin:{DB_PASSWORD}@redfeed.goti6.gcp.mongodb.net/<dbname>?retryWrites=true&w=majority')
-# db = client.subscriptions
+client = pymongo.MongoClient(f'mongodb+srv://dbAdmin:{DB_PASSWORD}@redfeed.goti6.gcp.mongodb.net/<dbname>?retryWrites=true&w=majority')
+db = client.subscriptions
+
+channels = db.channels
 
 FETCH_LIMIT = 5
 
@@ -39,8 +40,6 @@ FETCH_LIMIT = 5
 @bot.event
 async def on_ready():
     print('We have logged in as {0.user}'.format(bot))
-    # channel = client.get_channel(745410258142363688)
-    # await channel.send('hello')
 
 # TODO: Add more error processing
 @bot.event
@@ -59,12 +58,21 @@ async def fetch(ctx, subreddit, sort_type):
     await ctx.send(embed=embed)
 
 
-@bot.command(name='auto', description='Automatically fetch {FETCH_LIMIT} posts from the given subreddit, sorted by the given sort type (hot/new/top/rising), at every given interval (in hours). Example: ".auto funny hot 1" will fetch the {FETCH_LIMIT} hottest posts from r/funny every hour.')
+@bot.command(name='auto', description=f'Automatically fetch {FETCH_LIMIT} posts from the given subreddit, sorted by the given sort type (hot/new/top/rising), at every given interval (in hours). Example: ".auto funny hot 1" will fetch the {FETCH_LIMIT} hottest posts from r/funny every hour.')
 async def auto(ctx, subreddit, sort_type, interval : float):
     loop = FetchLoop(ctx.channel, subreddit, sort_type, interval, __gen_embed)
+    # doc = {
+    #     "_id" : ctx.channel.id, 
+    #     "subreddits" : [
+    #         s
+    #     ], 
+    #     "sort_type" : sort_type,
+    #     "interval
+    # }
 
 
-@bot.command(description='Fetches the {FETCH_LIMIT} newest posts from the given subreddit, then every time a new post is submitted to the subreddit, a message will be sent with the post\'s details. Example: ".feed funny"')
+
+@bot.command(description=f'Fetches the {FETCH_LIMIT} newest posts from the given subreddit, then every time a new post is submitted to the subreddit, a message will be sent with the post\'s details. Example: ".feed funny"')
 async def feed(ctx, subreddit):
     embed = __gen_embed(subreddit, 'new')
     await ctx.send(embed=embed)
