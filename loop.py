@@ -1,8 +1,8 @@
 from discord.ext import tasks, commands
 
 class FetchLoop:
-    def __init__(self, channel, subreddit, sort_type, interval, fn):
-        self.fetch_loop.change_interval(hours=float(interval))
+    def __init__(self, channel, subreddit, sort_type, interval : float, fn):
+        self.fetch_loop.change_interval(hours=interval)
         self.fetch_loop.start(channel, subreddit, sort_type)
         self.fn = fn
 

@@ -25,24 +25,37 @@ reddit = praw.Reddit(client_id=client_id,
 
 bot = commands.Bot(command_prefix='.')
 
-########################## Bot Commands ##########################
+########################## Bot Events ##########################
 @bot.event
 async def on_ready():
     print('We have logged in as {0.user}'.format(bot))
 
+@bot.event
+async def on_command_error(ctx, error):
+    print(error)
+    if isinstance(error, commands.CommandNotFound):
+        await ctx.send('The command you have entered was not found, please check **.help** for all available commands.')
+    if isinstance(error, commands.MissingRequiredArgument):
+        await ctx.send(f'You are missing the **{error.param}** argument. Please pass in all required arguments, see **.help {ctx.command}** for more information.')
+
+########################## Bot Commands ##########################
 # TODO: Add error processing, ie. when the user misses an argument in the commands
-@bot.command(description='Fetch 5 posts from the given subreddit, sorted by the given sort type (hot/new/top/rising). Example: \".fetch funny hot\" will fetch the 5 hottest posts from r/funny.')
+@bot.command(description='Fetch 5 posts from the given subreddit, sorted by the given sort type (hot/new/top/rising). Example: ".fetch funny hot" will fetch the 5 hottest posts from r/funny.')
 async def fetch(ctx, subreddit, sort_type):
     embed = __gen_embed(subreddit, sort_type)
     await ctx.send(embed=embed)
 
+@fetch.error
+async def fetch_error(ctx, error):
+    pass
+
 # TODO: Add error processing, ie. when the user misses an argument in the commands
-@bot.command(name='auto', description='Automatically fetch 5 posts from the given subreddit, sorted by the given sort type (hot/new/top/rising), at every given interval (in hours). Example: \".auto funny hot 1\" will fetch the 5 hottest posts from r/funny every hour.')
-async def fetch_auto(ctx, subreddit, sort_type, interval):
+@bot.command(name='auto', description='Automatically fetch 5 posts from the given subreddit, sorted by the given sort type (hot/new/top/rising), at every given interval (in hours). Example: ".auto funny hot 1" will fetch the 5 hottest posts from r/funny every hour.')
+async def auto(ctx, subreddit, sort_type, interval : float):
     loop = FetchLoop(ctx.channel, subreddit, sort_type, interval, __gen_embed)
 
 # TODO: Add error processing, ie. when the user misses an argument in the commands
-@bot.command(description='Fetches the 5 newest posts from the given subreddit, then every time a new post is submitted to the subreddit, a message will be sent with the post\'s details. Example: \".feed funny\"')
+@bot.command(description='Fetches the 5 newest posts from the given subreddit, then every time a new post is submitted to the subreddit, a message will be sent with the post\'s details. Example: ".feed funny"')
 async def feed(ctx, subreddit):
     embed = __gen_embed(subreddit, 'new')
     await ctx.send(embed=embed)
