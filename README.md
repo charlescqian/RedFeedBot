@@ -7,11 +7,13 @@ RedFeedBot is a Discord bot that can automatically pull submissions from a given
 - Automatically fetch and post the top/newest/hottest/rising posts of a given subreddit for every given interval 
 - Subscribeds to a given subreddit and provides a feed of the newest post of a given subreddit
 
-## Invite to Your Server
+## Invite RedFeed to Your Server
 - TODO: insert invite link here
 
 ## Future Features
+- Cancel/unsubscribe the channel from a specific subreddit or all subreddits
 - Store the subreddits that each channel has subscribed to, so when the bot is restarted, the subreddits that are subscribed by each channel is saved
+
 
 ## License
 [MIT](https://choosealicense.com/licenses/mit/)
